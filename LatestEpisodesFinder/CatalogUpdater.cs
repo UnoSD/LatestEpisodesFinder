@@ -10,9 +10,11 @@ namespace LatestEpisodesFinder
     {
         internal static async Task UpdateEndedOrCanceledShowsStatus(string dbFile)
         {
-            var shows = GetAll<Series>(dbFile).Select(e => (series: e,
-                                                            traktShow: TraktClient.GetShowAsync(e.Id.ToString())))
-                                              .ToList();
+            var allRunning = GetAll<Series>(dbFile, s => s.IsRunning);
+
+            var shows = allRunning.Select(e => (series: e,
+                                                traktShow: TraktClient.GetShowAsync(e.Id.ToString())))
+                                  .ToList();
 
             await shows.Select(e => e.traktShow)
                        .WhenAll();

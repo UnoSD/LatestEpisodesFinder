@@ -16,8 +16,8 @@ namespace LatestEpisodesFinder
             string FormatEpisode(TraktEpisode e, string seriesName) => 
                 $"{e.FirstAired} - {seriesName} - {e.SeasonNumber} - {e.Title}";
 
-            var seasons = await GetAll<Series>(dbFile).Select(GetLastSeason)
-                                                      .WhenAll();
+            var seasons = await GetAll<Series>(dbFile, s => s.IsRunning).Select(GetLastSeason)
+                                                                        .WhenAll();
 
             await seasons.Select(s => (s.name, episodes: GetLatestEpisodes(s.season, fromDate)))
                          .Where(s => s.episodes.Any())

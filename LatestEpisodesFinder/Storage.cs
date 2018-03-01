@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using LiteDB;
 
 namespace LatestEpisodesFinder
@@ -9,6 +10,9 @@ namespace LatestEpisodesFinder
     {
         internal static IReadOnlyCollection<T> GetAll<T>(string dbFile) => 
             Execute<T, IReadOnlyCollection<T>>(dbFile, collection => collection.FindAll().ToList());
+
+        internal static IReadOnlyCollection<T> GetAll<T>(string dbFile, Expression<Func<T, bool>> predicate) => 
+            Execute<T, IReadOnlyCollection<T>>(dbFile, collection => collection.Find(predicate).ToList());
 
         internal static int SaveAll<T>(string dbFile, IEnumerable<T> entities) => 
             Execute<T, int>(dbFile, collection => collection.InsertBulk(entities));
