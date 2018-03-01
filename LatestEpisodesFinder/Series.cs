@@ -7,5 +7,6 @@ namespace LatestEpisodesFinder
     {
         public uint Id { get; set; }
         public string Name { get; set; }
+        public bool IsRunning { get; set; }
     }
 }

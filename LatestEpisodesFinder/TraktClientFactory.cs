@@ -35,7 +35,7 @@ namespace LatestEpisodesFinder
         {
             try
             {
-                return await client.Shows.GetShowAsync(serie);
+                return await client.Shows.GetShowAsync(serie, Info);
             }
             catch (TraktShowNotFoundException)
             {

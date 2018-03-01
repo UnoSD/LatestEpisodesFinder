@@ -13,6 +13,9 @@ namespace LatestEpisodesFinder
         internal static int SaveAll<T>(string dbFile, IEnumerable<T> entities) => 
             Execute<T, int>(dbFile, collection => collection.InsertBulk(entities));
 
+        internal static int UpdateAll<T>(string dbFile, IEnumerable<T> entities) => 
+            Execute<T, int>(dbFile, collection => collection.Update(entities));
+
         static TReturn Execute<T, TReturn>(string dbFile, Func<LiteCollection<T>, TReturn> action)
         {
             using (var database = new LiteDatabase(dbFile))
