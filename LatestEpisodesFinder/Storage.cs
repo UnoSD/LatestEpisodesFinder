@@ -14,6 +14,9 @@ namespace LatestEpisodesFinder
         internal static IReadOnlyCollection<T> GetAll<T>(string dbFile, Expression<Func<T, bool>> predicate) => 
             Execute<T, IReadOnlyCollection<T>>(dbFile, collection => collection.Find(predicate).ToList());
 
+        internal static void Save<T>(string dbFile, T entity) => 
+            Execute<T, object>(dbFile, collection => collection.Insert(entity));
+
         internal static int SaveAll<T>(string dbFile, IEnumerable<T> entities) => 
             Execute<T, int>(dbFile, collection => collection.InsertBulk(entities));
 

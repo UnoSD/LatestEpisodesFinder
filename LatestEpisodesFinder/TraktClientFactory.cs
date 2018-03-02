@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TraktApiSharp;
+using TraktApiSharp.Enums;
 using TraktApiSharp.Exceptions;
 using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Shows.Seasons;
@@ -45,5 +47,10 @@ namespace LatestEpisodesFinder
 
         internal static Task<IEnumerable<TraktSeason>> GetSeasonsAsync(this TraktClient client, string serie) =>
             client.Seasons.GetAllSeasonsAsync(serie, Info);
+
+        internal static Task<IReadOnlyCollection<TraktShow>> FindShowsAsync(this TraktClient client, string name) =>
+            client.Search
+                  .GetTextQueryResultsAsync(TraktSearchResultType.Show, $"*{name}*", TraktSearchField.Title)
+                  .ContinueWith(result => (IReadOnlyCollection<TraktShow>)result.Result.Items.Select(item => item.Show).ToList());
     }
 }

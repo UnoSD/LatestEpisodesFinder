@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LatestEpisodesFinder
@@ -10,5 +11,7 @@ namespace LatestEpisodesFinder
         internal static Task WhenAll(this IEnumerable<Task> tasks) => Task.WhenAll(tasks);
 
         internal static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> tasks) => Task.WhenAll(tasks);
+
+        internal static bool In<T>(this T value, params T[] options) => options.Any(v => v.Equals(value));
     }
 }
