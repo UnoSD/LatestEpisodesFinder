@@ -17,10 +17,11 @@ namespace LatestEpisodesFinder
                 {
                     settings.ParsingCulture = CultureInfo.CurrentCulture;
                     settings.IgnoreUnknownArguments = false;
-                }).ParseArguments<AddOptions, FindOptions>(args)
+                }).ParseArguments<AddOptions, FindOptions, ListOptions>(args)
                   .MapResult((AddOptions add) => AddSeriesToCheckAsync(add.DatabaseFile, add.Name),
                              (FindOptions find) => FindLatestEpisodeByDateAsync(find.FromDate,
                                                                                 find.DatabaseFile),
+                             (ListOptions list) => ListSeriesStored(list.DatabaseFile),
                              errors => errors.Select(e => e.Tag.ToString())
                                              .Select(Console.Out.WriteLineAsync)
                                              .WhenAll()) :

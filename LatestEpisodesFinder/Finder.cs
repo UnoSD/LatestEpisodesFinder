@@ -25,6 +25,11 @@ namespace LatestEpisodesFinder
                          .Select(Console.Out.WriteLineAsync)
                          .WhenAll();
         }
+        
+        internal static  Task ListSeriesStored(string dbFile) => 
+            GetAll<Series>(dbFile).Select(s => $"{s.Name} - {(s.IsRunning ? "Running" : "Not running")}")
+                                  .Select(Console.Out.WriteLineAsync)
+                                  .WhenAll();
 
         static TraktSeason LastSeason(Task<IEnumerable<TraktSeason>> task) => 
             task.Result
