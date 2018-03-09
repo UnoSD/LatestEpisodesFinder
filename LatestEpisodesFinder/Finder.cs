@@ -14,7 +14,7 @@ namespace LatestEpisodesFinder
         internal static async Task FindLatestEpisodeByDateAsync(DateTime fromDate, string dbFile)
         {
             string FormatEpisode(TraktEpisode e, string seriesName) => 
-                $"{e.FirstAired} - {seriesName} - {e.SeasonNumber} - {e.Title}";
+                $"{TimeZoneInfo.ConvertTimeFromUtc(e.FirstAired.Value, TimeZoneInfo.Local)} - {seriesName} - {e.SeasonNumber} - {e.Title}";
 
             var seasons = await GetAll<Series>(dbFile, s => s.IsRunning).Select(GetLastSeason)
                                                                         .WhenAll();
@@ -26,7 +26,7 @@ namespace LatestEpisodesFinder
                          .WhenAll();
         }
         
-        internal static  Task ListSeriesStored(string dbFile) => 
+        internal static Task ListSeriesStored(string dbFile) => 
             GetAll<Series>(dbFile).Select(s => $"{s.Name} - {(s.IsRunning ? "Running" : "Not running")}")
                                   .Select(Console.Out.WriteLineAsync)
                                   .WhenAll();
@@ -43,8 +43,8 @@ namespace LatestEpisodesFinder
 
         static IReadOnlyCollection<TraktEpisode> GetLatestEpisodes(TraktSeason season, DateTime fromDate) =>
             season.Episodes
-                  .Where(e => (e.FirstAired ?? DateTime.MinValue) > fromDate &&
-                              (e.FirstAired ?? DateTime.MinValue) < DateTime.Now.AddDays(1))
+                  .Where(e => e.FirstAired >= fromDate &&
+                              e.FirstAired <= DateTime.UtcNow)
                   .ToList();
     }
 }
