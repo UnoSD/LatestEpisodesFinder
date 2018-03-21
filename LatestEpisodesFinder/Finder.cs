@@ -33,6 +33,7 @@ namespace LatestEpisodesFinder
 
         static TraktSeason LastSeason(Task<IEnumerable<TraktSeason>> task) => 
             task.Result
+                .Where(season => season.FirstAired.HasValue)
                 .OrderBy(season => season.Number ?? 0)
                 .Last();
 
