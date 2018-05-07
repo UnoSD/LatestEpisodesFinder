@@ -14,7 +14,7 @@ namespace LatestEpisodesFinder
         internal static async Task FindLatestEpisodeByDateAsync(DateTime fromDate, string dbFile)
         {
             string FormatEpisode(TraktEpisode e, string seriesName) => 
-                $"{TimeZoneInfo.ConvertTimeFromUtc(e.FirstAired.Value, TimeZoneInfo.Local)} - {seriesName} - {e.SeasonNumber} - {e.Title}";
+                $"{TimeZoneInfo.ConvertTimeFromUtc(e.FirstAired.Value, TimeZoneInfo.Local)} - {seriesName} - {e.SeasonNumber}x{e.Number} - {e.Title}";
 
             var seasons = await GetAll<Series>(dbFile, s => s.IsRunning).Select(GetLastSeason)
                                                                         .WhenAll();
