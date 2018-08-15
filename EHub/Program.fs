@@ -1,49 +1,76 @@
 ﻿open CommandLine
-open CommandLine.Text
+open System
+open System.Globalization
 
-type Options = 
+[<Verb("find", HelpText = "Find media in the database.")>]
+type FindOptions = 
     {
-        [<Option(HelpText = "Input a string value here.", Default="中文")>]
-        stringValue : string;
-        [<Option('i', Min = 3, Max = 4, HelpText = "Input a int sequence here.")>]
-        intSequence : int seq;
-        [<Option('x', HelpText = "Define a switch (boolean) here.")>]
-        boolValue : bool;
-        [<Value(0, MetaName = "longvalue", HelpText = "A long scalar here.")>]
-        longValue : int64 option; 
+        [<Option(HelpText = "Input the name of the media to find.", Default="*")>]
+        searchTerm : string;
     }
-    with
-        [<Usage(ApplicationAlias = "fsi fsharp-demo.fsx")>]
-        static member examples
-            with get() = 
-                seq {
-                        yield Example("Supply some values", 
-                                      {
-                                          stringValue = "hello"; 
-                                          boolValue = true;
-                                          intSequence = seq {1..3}; 
-                                          longValue = Some 10L
-                                      }) 
-                    }
 
-let formatLong o =
-  match o with
-    | Some(v) -> string v
-    | _ -> "{None}"
+[<Verb("list", HelpText = "List all media in the database.")>]
+type ScanOptions = 
+    {
+        [<Option>]
+        path : string;
+    }
 
-let formatInput (o : Options)  =
-    sprintf "--stringvalue: %s\n-i: %A\n-x: %b\nvalue: %s\n" o.stringValue o.intSequence o.boolValue (formatLong o.longValue)
+type Result<'a> =
+      Success of 'a
+    | Failure of string list
 
-let inline (|Success|Fail|) (result : ParserResult<'a>) =
-  match result with
-  | :? Parsed<'a> as parsed -> Success(parsed.Value)
-  | :? NotParsed<'a> as notParsed -> Fail(notParsed.Errors)
-  | _ -> failwith "invalid parser result"
+type ResultBuilder() =
+    member __.Bind(x, f) =
+        match x with
+        | Success x -> f(x)
+        | Failure x -> Failure x
+
+    member __.Return(x) =
+        Success x
+
+let result = new ResultBuilder()
+
+let parseArguments args =
+    let settings (settings : ParserSettings) =
+        settings.ParsingCulture <- CultureInfo.CurrentCulture;
+        settings.IgnoreUnknownArguments <- false
+
+    let settingsAction =
+        Action<ParserSettings>(settings)
+
+    use parser =
+        new Parser(settingsAction) 
+
+    args |> parser.ParseArguments<FindOptions, ScanOptions>
 
 [<EntryPoint>]
 let main args =
-    match args |> Parser.Default.ParseArguments<Options> with
-    | Success opts -> printf "%s" (formatInput opts)
-    | Fail    errs -> printf "Invalid: %A, Errors: %u\n" args (Seq.length errs)
+    let result =
+        result {
+                   let! parsed =
+                       match args |> Array.toList with
+                       | "find"::tail -> Success (parseArguments tail)
+                       | _            -> Failure [ "Unknown verb." ]
 
-    0
+                   let! parsed =
+                       match parsed with
+                       | :? Parsed<obj>    as parsed    -> Success  parsed.Value
+                       | :? NotParsed<obj> as notParsed -> Failure  (notParsed.Errors |> 
+                                                                     Seq.map (fun e -> e.ToString()) |> 
+                                                                     Seq.toList)
+                       | _                              -> Failure  [ "Invalid parser result." ]
+
+                   let unit =
+                       match parsed with
+                       | :? FindOptions as o -> printf "find %A" o.searchTerm
+                       | :? ScanOptions as o -> printf "list %A" o.path
+                       | _                   -> printf "bad"
+                   
+                   return 0
+               }
+    
+    match result with
+    | Success x -> x
+    | Failure e -> printf "%A" e
+                   1
