@@ -16,18 +16,14 @@ type ScanOptions =
         path : string;
     }
 
-type Result<'a> =
-      Success of 'a
-    | Failure of string list
-
 type ResultBuilder() =
-    member __.Bind(x, f) =
+    member __.Bind(x, (f : 'c -> Result<'f,'d>)) =
         match x with
-        | Success x -> f(x)
-        | Failure x -> Failure x
+        | Ok x    -> f(x)
+        | error   -> error
 
     member __.Return(x) =
-        Success x
+        Ok x
 
 let result = new ResultBuilder()
 
@@ -50,16 +46,16 @@ let main args =
         result {
                    let! parsed =
                        match args |> Array.toList with
-                       | "find"::tail -> Success (parseArguments tail)
-                       | _            -> Failure [ "Unknown verb." ]
+                       | "find"::tail -> Ok (parseArguments tail)
+                       | _            -> Result.Error [ "Unknown verb." ]
 
                    let! parsed =
                        match parsed with
-                       | :? Parsed<obj>    as parsed    -> Success  parsed.Value
-                       | :? NotParsed<obj> as notParsed -> Failure  (notParsed.Errors |> 
-                                                                     Seq.map (fun e -> e.ToString()) |> 
-                                                                     Seq.toList)
-                       | _                              -> Failure  [ "Invalid parser result." ]
+                       | :? Parsed<obj>    as parsed    -> Ok            parsed.Value
+                       | :? NotParsed<obj> as notParsed -> Result.Error  (notParsed.Errors |> 
+                                                                          Seq.map (fun e -> e.ToString()) |> 
+                                                                          Seq.toList)
+                       | _                              -> Result.Error  [ "Invalid parser result." ]
 
                    let unit =
                        match parsed with
