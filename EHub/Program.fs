@@ -1,27 +1,26 @@
-﻿open ResultBuilder
-open Parser
+﻿open Parser
+open CommandLineOptions
+
+let find (f : FindOptions) =
+    match parseFindArguments f.searchTerms with
+    | NoArguments -> printf "find all"
+    | What x      -> printf "find %A" x
+    | Error x     -> printf "error %A" x
+
+    printf "%A" f
+    0
+
+let scan f =
+    printf "%A" f
+    0
+
+let error e =
+    printf "%A" e
+    1
 
 [<EntryPoint>]
 let main args =
-    let result =
-        result {
-                   let! parsed =
-                       match args |> Array.toList with
-                       | "find"::tail -> Ok (parseArguments tail)
-                       | _            -> Result.Error [ "Unknown verb." ]
-
-                   do 
-                    match parsed with
-                    | Find  f -> printf "%A" f
-                    | Scan  f -> printf "%A" f
-                    | Error e -> printf "%A" e
-
-                   return Error [ ]
-               }
-    
-    let b =
-        match result with
-        | Ok x -> x
-        | _ -> CommandLineOption.Error [ ]
-
-    0
+    match parseArguments args with
+    | Find  f -> find f
+    | Scan  f -> scan f
+    | CommandLineOption.Error e -> error e
