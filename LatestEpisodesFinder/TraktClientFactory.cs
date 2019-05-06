@@ -56,6 +56,23 @@ namespace LatestEpisodesFinder
                   .ContinueWith(result => (IReadOnlyCollection<TraktShow>)result.Result
                                                                                 .Items
                                                                                 .Select(item => item.Show)
-                                                                                .ToList());
+                                                                                .ToList())
+                  .WithIdResultAsync(client, name);
+
+        static async Task<IReadOnlyCollection<TraktShow>> WithIdResultAsync
+        (
+            this Task<IReadOnlyCollection<TraktShow>> showsTask,
+            TraktClient client,
+            string name
+        )
+        {
+            var results = await showsTask;
+            
+            if (results.Count >= 1) return results;
+            
+            var show = await client.GetShowAsync(name);
+                
+            return show.Ids.Trakt != 0 ? new[] { show } : new TraktShow[0];
+        }
     }
 }
