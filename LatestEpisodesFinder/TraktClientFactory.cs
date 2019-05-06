@@ -50,7 +50,12 @@ namespace LatestEpisodesFinder
 
         internal static Task<IReadOnlyCollection<TraktShow>> FindShowsAsync(this TraktClient client, string name) =>
             client.Search
-                  .GetTextQueryResultsAsync(TraktSearchResultType.Show, $"*{name}*", TraktSearchField.Title)
-                  .ContinueWith(result => (IReadOnlyCollection<TraktShow>)result.Result.Items.Select(item => item.Show).ToList());
+                  .GetTextQueryResultsAsync(TraktSearchResultType.Show, 
+                                            $"*{name}*", 
+                                            TraktSearchField.Title | TraktSearchField.Aliases)
+                  .ContinueWith(result => (IReadOnlyCollection<TraktShow>)result.Result
+                                                                                .Items
+                                                                                .Select(item => item.Show)
+                                                                                .ToList());
     }
 }
