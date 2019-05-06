@@ -22,6 +22,9 @@ namespace LatestEpisodesFinder
 
         internal static int UpdateAll<T>(string dbFile, IEnumerable<T> entities) => 
             Execute<T, int>(dbFile, collection => collection.Update(entities));
+        
+        internal static int Delete<T>(string dbFile, Expression<Func<T, bool>> predicate) => 
+            Execute<T, int>(dbFile, collection => collection.Delete(predicate));
 
         static TReturn Execute<T, TReturn>(string dbFile, Func<LiteCollection<T>, TReturn> action)
         {
