@@ -19,7 +19,8 @@ namespace LatestEpisodesFinder
             var seasons = await GetAll<Series>(dbFile, s => s.IsRunning).Select(GetLastSeason)
                                                                         .WhenAll();
 
-            await seasons.Select(s => (s.name, episodes: GetLatestEpisodes(s.season, fromDate)))
+            await seasons.Where(s => s.season != null) // Season not aired yet will appear as null
+                         .Select(s => (s.name, episodes: GetLatestEpisodes(s.season, fromDate)))
                          .Where(s => s.episodes.Any())
                          .SelectMany(s => s.episodes.Select(e => FormatEpisode(e, s.name)))
                          .Select(Console.Out.WriteLineAsync)
@@ -35,7 +36,7 @@ namespace LatestEpisodesFinder
             task.Result
                 .Where(season => season.FirstAired.HasValue)
                 .OrderBy(season => season.Number ?? 0)
-                .Last();
+                .LastOrDefault();
 
         static async Task<(string name, TraktSeason season)> GetLastSeason(Series series) => 
             (series.Name, 
